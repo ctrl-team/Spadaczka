@@ -43,7 +43,7 @@ if(len == 0){
     dup()
 }
 
-socket = io.connect('https://spadaczka.glitch.me/')
+socket = io.connect()
 socket.emit("joined",nickname)
 
 socket.on("message", (data)=>{
