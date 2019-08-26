@@ -7,3 +7,10 @@ Packages:
 
 Engine:
 - node: 8^
+
+Start:
+```
+npm install --save
+
+node server.js
+```
