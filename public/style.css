@@ -1,0 +1,61 @@
+body{
+  background: #0f0f0f;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+}
+
+#messages{
+  margin: 10px;
+  color: white;
+  font-size: 30px;
+  
+  padding-bottom: 8vh;
+}
+a {
+  color: #ffcc00;
+  text-decoration: none
+}
+.message{
+  background: #1f1f1f;
+  font-size: 25px;
+  padding: 15px;
+  padding-bottom: 20px;
+  margin-top: 5px;
+  border-radius: 10px;
+}
+
+.smaller_msg{
+  font-size: 15px
+}
+
+#writing_section{
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  justify-content: center;
+  position: fixed;
+  bottom: 0;
+  background: #0f0f0f;
+  margin: 0;
+  width:98%;
+  padding: 10px;
+}
+
+#message_input{
+  margin-left: auto;
+  margin-right: auto;
+  background: #1f1f1f;
+  color: white;
+  border: none;
+  padding: 5px;
+  font-size: 25px;
+  height: 4vh;
+  width: 90%;
+  border-radius: 10px;
+}
+
+#btn{
+  padding: 5px;
+  font-size: 25px;
+  border:none;
+}
