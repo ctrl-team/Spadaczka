@@ -58,19 +58,17 @@ io.on('connection', function(socket) {
 
     }
     
-    if(data.message.startsWith("/shrug")){
-      let temp = data.message.replace("/shrug", "")
-      data.message = "¯\\_(ツ)_/¯ " + temp;
+    if(data.message.includes("/shrug")){
+      data.message = data.message.replace(/\/shrug/g, "¯\\_(ツ)_/¯")
     }
     
-    if(data.message.startsWith("/flip")){
-      let temp = data.message.replace("/flip", "")
-      data.message = "(╯°□°）╯︵ ┻━┻ " + temp
+    if(data.message.includes("/flip")){
+      data.message = data.message.replace(/\/flip/g, "(╯°□°）╯︵ ┻━┻ ")
     }
     
-    if(data.message.startsWith("/redirect")){
+    if(data.message.startsWith("/reload")){
       if(data.author == "Nimplex" || data.author == "jaca"){
-        data.message = '<meta http-equiv="refresh" content="1;url=https://spadaczka.glitch.me" />'
+        data.message = '<meta http-equiv="refresh" content="1;" />'
       }
     }
     
