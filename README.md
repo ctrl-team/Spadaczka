@@ -1,5 +1,5 @@
 # Spadaczka
-📜Full working socket chat with emoji.
+📜Full working socket chat with emoji keyboard. (check it out here: https://spadaczka.glitch.me/)
 
 ### Packages:
 - express: ^4.16.4
