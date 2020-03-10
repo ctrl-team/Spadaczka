@@ -1,0 +1,10 @@
+{
+  "server": {
+    "port": 2080
+  },
+  "rdb": {
+    "port": 28015,
+    "table": "spadaczka",
+    "host": "localhost"
+  }
+}
