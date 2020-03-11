@@ -5,19 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
   </head>
+
   <body>
     <%if(err){%>
     <h1><%=err%></h1>
     <%}%>
-    <form action="/api/login" method="POST" name="form">
+    <form action="/api/register" method="POST" name="form">
       <input type="text" name="email" placeholder="Email" id="email" />
+      <input type="text" name="username" placeholder="Username" id="username" />
       <input
         type="password"
         name="password"
         placeholder="Password"
         id="passwrd"
       />
-      <input type="submit" value="Login!" />
+      <input type="submit" value="Register!" />
     </form>
   </body>
 </html>

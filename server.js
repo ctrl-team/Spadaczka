@@ -22,14 +22,23 @@ app.set("view engine", "ejs");
 app.get("/", (req, res) => {});
 
 app.get("/login", (req, res) => {
-  if (req.session.logged && req.session.username) return res.redirect("/home");
+  if (req.session.logged && req.session.email && req.session.username)
+    return res.redirect("/home");
   let err = req.query.err;
   if (!err) err = null;
   res.render(`${__dirname}/views/login.ejs`, { err: err });
 });
 
+app.get("/register", (req, res) => {
+  if (req.session.logged && req.session.email && req.session.username)
+    return res.redirect("/home");
+  let err = req.query.err;
+  if (!err) err = null;
+  res.render(`${__dirname}/views/register.ejs`, { err: err });
+});
+
 app.get("/home", (req, res) => {
-  if (req.session.logged && req.session.username) {
+  if (req.session.logged && req.session.email) {
     res.render(`${__dirname}/views/home.ejs`, {
       username: req.session.username
     });
@@ -39,25 +48,58 @@ app.get("/home", (req, res) => {
 });
 
 app.post("/api/login", (req, res) => {
-  let username = req.body.username;
+  let email = req.body.email;
   let password = req.body.password;
-  if (username && password) {
+  email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
+  if (email && password) {
     r.table(rdb.table)
-      .filter({ username: username, password: password })
+      .filter({ email: email, password: password })
       .coerceTo("array")
       .run(global.conn, (err, dbres) => {
         if (err) console.error(err);
         if (dbres[0]) {
           req.session.logged = true;
-          req.session.username = username;
+          req.session.username = dbres[0]["username"];
+          req.session.email = email;
           res.redirect("/home");
         } else {
-          res.send("Incorrect Username and/or Password.");
+          res.send("Incorrect email and/or password.");
         }
         res.end();
       });
   } else {
-    res.send("Please enter Username or password.");
+    res.send("Please enter email and password.");
+    res.end();
+  }
+});
+
+app.post("/api/register", (req, res) => {
+  let email = req.body.email;
+  let username = req.body.username;
+  let password = req.body.password;
+  email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
+  if (email && password && username) {
+    r.table(rdb.table)
+      .filter({ email: email })
+      .coerceTo("array")
+      .run(global.conn, (err, dbres) => {
+        if (!dbres[0]) {
+          db.createAccount({
+            email: email,
+            username: username,
+            password: password
+          });
+          req.session.email = email;
+          req.session.username = username;
+          req.session.logged = true;
+          res.redirect("/home");
+        } else {
+          res.send("Sorry email is actually in use.");
+          res.end();
+        }
+      });
+  } else {
+    res.send("Please enter email, username and password.");
     res.end();
   }
 });
