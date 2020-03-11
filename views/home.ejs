@@ -6,9 +6,21 @@
     <title>Document</title>
   </head>
   <body>
-    Witaj <%=username%>
+    Witaj <%=session.username%>#<%=session.tag%>
     <form action="/api/logout" method="GET" name="form">
-      <input type="submit" value="Wyloguj!" />
+      <input type="submit" value="Logout!" />
+    </form>
+    <form action="/api/friends/add" method="POST" name="form">
+      <input
+        type="text"
+        name="username"
+        placeholder="Username#tag"
+        id="username"
+      />
+      <input type="submit" value="Zaproś!" />
+    </form>
+    <form action="/home/friends" method="GET" name="form">
+      <input type="submit" value="Friends" />
     </form>
   </body>
 </html>

@@ -38,16 +38,35 @@ app.get("/register", (req, res) => {
 });
 
 app.get("/home", (req, res) => {
-  if (req.session.logged && req.session.email) {
+  if (req.session.logged && req.session.email && req.session.username) {
     res.render(`${__dirname}/views/home.ejs`, {
-      username: req.session.username
+      session: req.session
     });
   } else {
     res.redirect("/login");
   }
 });
 
+app.get("/home/friends", (req, res) => {
+  if (!req.session.logged && !req.session.email && !req.session.username)
+    return res.redirect("/login");
+  r.table(rdb.table)
+    .filter({
+      email: req.session.email,
+      username: req.session.username
+    })
+    .coerceTo("array")
+    .run(global.conn, (err, dbres) => {
+      if (err) console.error(err);
+      res.send(
+        `Pending: ${dbres[0]["friends_pending"]}\nFriends: ${dbres[0]["friends"]}`
+      );
+    });
+});
+
 app.post("/api/login", (req, res) => {
+  if (req.session.logged && req.session.email && req.session.username)
+    return res.redirect("/home");
   let email = req.body.email;
   let password = req.body.password;
   email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
@@ -60,6 +79,7 @@ app.post("/api/login", (req, res) => {
         if (dbres[0]) {
           req.session.logged = true;
           req.session.username = dbres[0]["username"];
+          req.session.tag = dbres[0]["tag"];
           req.session.email = email;
           res.redirect("/home");
         } else {
@@ -82,7 +102,9 @@ function validateEmail(email) {
   return re.test(String(email));
 }
 
-app.post("/api/register", (req, res) => {
+app.post("/api/register", async (req, res) => {
+  if (req.session.logged && req.session.email && req.session.username)
+    return res.redirect("/home");
   let email = req.body.email;
   let username = req.body.username;
   let password = req.body.password;
@@ -95,17 +117,28 @@ app.post("/api/register", (req, res) => {
     r.table(rdb.table)
       .filter({ email: email })
       .coerceTo("array")
-      .run(global.conn, (err, dbres) => {
+      .run(global.conn, async (err, dbres) => {
         if (!dbres[0]) {
-          db.createAccount({
-            email: email,
-            username: username,
-            password: password
-          });
-          req.session.email = email;
-          req.session.username = username;
-          req.session.logged = true;
-          res.redirect("/home");
+          r.table(rdb.table)
+            .count()
+            .run(global.conn, (err, count) => {
+              let tag = count + 1;
+              let account = {
+                username: username,
+                email: email,
+                password: password,
+                tag: tag,
+                id: tag,
+                friends_pending: [],
+                friends: []
+              };
+              db.createAccount(account);
+              req.session.email = email;
+              req.session.username = username;
+              req.session.tag = tag;
+              req.session.logged = true;
+              res.redirect("/home");
+            });
         } else {
           res.render(`${__dirname}/views/err.ejs`, {
             err: "Sorry email is actually in use."
@@ -121,8 +154,55 @@ app.post("/api/register", (req, res) => {
   }
 });
 
+app.post("/api/friends/add", (req, res) => {
+  let username = req.body.username;
+  if (!username) return res.redirect("/home");
+  username = username.split("#");
+  if (!username[1]) return res.redirect("/home");
+  r.table(rdb.table)
+    .filter({ username: username[0], tag: parseInt(username[1]) })
+    .coerceTo("array")
+    .run(global.conn, (err, dbres) => {
+      if (err) console.error(err);
+      if (!dbres) return res.redirect("/home");
+      if (!dbres[0]) return res.redirect("/home");
+      if (!req.session.logged && !req.session.email && !req.session.username)
+        return res.redirect("/login");
+      r.table(rdb.table)
+        .filter({
+          email: req.session.email,
+          username: req.session.username
+        })
+        .coerceTo("array")
+        .run(global.conn, (err, dbres) => {
+          if (err) console.error(err);
+          if (!dbres[0]) return res.redirect("/home");
+          let pending = JSON.stringify(dbres[0]["friends_pending"]);
+          pending = JSON.parse(pending);
+          if (
+            `${username[0]}#${username[1]}` ==
+            `${req.session.username}#${req.session.tag}`
+          )
+            return res.redirect("/home");
+          if (!pending.indexOf(`${username[0]}#${username[1]}`))
+            return res.redirect("/home");
+          pending.push(`${username[0]}#${username[1]}`);
+          r.table(rdb.table)
+            .filter({
+              email: req.session.email,
+              username: req.session.username
+            })
+            .update({ friends_pending: pending })
+            .run(global.conn, (err, dbres) => {
+              if (err) console.error(err);
+            });
+          res.redirect("/home/friends");
+        });
+    });
+});
+
 app.get("/api/logout", (req, res) => {
-  if (req.session.logged && req.session.username) {
+  if (req.session.logged && req.session.email && req.session.username) {
     req.session.destroy();
     res.redirect("/login");
   } else {
