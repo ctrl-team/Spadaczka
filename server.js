@@ -63,20 +63,33 @@ app.post("/api/login", (req, res) => {
           req.session.email = email;
           res.redirect("/home");
         } else {
-          res.send("Incorrect email and/or password.");
+          res.render(`${__dirname}/views/err.ejs`, {
+            err: "Incorrect email and/ or password."
+          });
         }
         res.end();
       });
   } else {
-    res.send("Please enter email and password.");
+    res.render(`${__dirname}/views/err.ejs`, {
+      err: "Please enter email and password."
+    });
     res.end();
   }
 });
+
+function validateEmail(email) {
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email));
+}
 
 app.post("/api/register", (req, res) => {
   let email = req.body.email;
   let username = req.body.username;
   let password = req.body.password;
+  if (!validateEmail(email))
+    return res.render(`${__dirname}/views/err.ejs`, {
+      err: "Email is not valid!"
+    });
   email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
   if (email && password && username) {
     r.table(rdb.table)
@@ -94,12 +107,16 @@ app.post("/api/register", (req, res) => {
           req.session.logged = true;
           res.redirect("/home");
         } else {
-          res.send("Sorry email is actually in use.");
+          res.render(`${__dirname}/views/err.ejs`, {
+            err: "Sorry email is actually in use."
+          });
           res.end();
         }
       });
   } else {
-    res.send("Please enter email, username and password.");
+    res.render(`${__dirname}/views/err.ejs`, {
+      err: "Please enter email, username and password."
+    });
     res.end();
   }
 });
