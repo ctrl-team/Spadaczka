@@ -1,33 +1,23 @@
-/* app.get("/login", (req, res) => {
-  if (req.session.logged && req.session.email && req.session.username)
-    return res.redirect("/home");
-  let err = req.query.err;
-  if (!err) err = null;
-  res.render(`${__dirname}/views/login.ejs`, { err: err });
-});
+let router = require("express").Router();
+let db = require("../database");
+let { rdb, server } = require("../config.json");
+let r = require("rethinkdb");
+let path = require("path");
 
-app.get("/register", (req, res) => {
-  if (req.session.logged && req.session.email && req.session.username)
-    return res.redirect("/home");
-  let err = req.query.err;
-  if (!err) err = null;
-  res.render(`${__dirname}/views/register.ejs`, { err: err });
-});
+function validateEmail(email) {
+  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  return re.test(String(email));
+}
 
-app.get("/home", (req, res) => {
-  if (req.session.logged && req.session.email && req.session.username) {
-    res.render(`${__dirname}/views/home.ejs`, {
-      session: req.session
-    });
-  } else {
-    res.redirect("/login");
-  }
-});
-app.post("/api/login", (req, res) => {
+router.post("/login", (req, res) => {
   if (req.session.logged && req.session.email && req.session.username)
     return res.redirect("/home");
   let email = req.body.email;
   let password = req.body.password;
+  if (!email.split("@")[1])
+    return res.render(path.join("..", "/views/err.ejs"), {
+      err: "Incorrect email and/ or password."
+    });
   email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
   if (email && password) {
     r.table(rdb.table)
@@ -42,33 +32,28 @@ app.post("/api/login", (req, res) => {
           req.session.email = email;
           res.redirect("/home");
         } else {
-          res.render(`${__dirname}/views/err.ejs`, {
+          res.render(path.join("..", "/views/err.ejs"), {
             err: "Incorrect email and/ or password."
           });
         }
         res.end();
       });
   } else {
-    res.render(`${__dirname}/views/err.ejs`, {
+    res.render(path.join("..", "/views/err.ejs"), {
       err: "Please enter email and password."
     });
     res.end();
   }
 });
 
-function validateEmail(email) {
-  let re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-  return re.test(String(email));
-}
-
-app.post("/api/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   if (req.session.logged && req.session.email && req.session.username)
     return res.redirect("/home");
   let email = req.body.email;
   let username = req.body.username;
   let password = req.body.password;
   if (!validateEmail(email))
-    return res.render(`${__dirname}/views/err.ejs`, {
+    return res.render(path.join("..", "/views/err.ejs"), {
       err: "Email is not valid!"
     });
   email = email.split("@")[0] + "@" + email.split("@")[1].toLowerCase();
@@ -97,21 +82,21 @@ app.post("/api/register", async (req, res) => {
               res.redirect("/home");
             });
         } else {
-          res.render(`${__dirname}/views/err.ejs`, {
+          res.render(path.join("..", "/views/err.ejs"), {
             err: "Sorry email is actually in use."
           });
           res.end();
         }
       });
   } else {
-    res.render(`${__dirname}/views/err.ejs`, {
+    res.render(path.join("..", "/views/err.ejs"), {
       err: "Please enter email, username and password."
     });
     res.end();
   }
 });
 
-app.get("/api/logout", (req, res) => {
+router.get("/logout", (req, res) => {
   if (req.session.logged && req.session.email && req.session.username) {
     req.session.destroy();
     req.destroy();
@@ -119,4 +104,6 @@ app.get("/api/logout", (req, res) => {
   } else {
     res.redirect("/login");
   }
-});*/
+});
+
+module.exports = router;
