@@ -1,7 +1,13 @@
 let router = require("express").Router();
 let path = require("path");
 
-router.get("/", (req, res) => {});
+router.get("/", (req, res) => {
+  if (req.session.logged && req.session.email && req.session.username) {
+    res.render(path.join("..", "/views/index.ejs"), { session: req.session });
+  } else {
+    res.render(path.join("..", "/views/index.ejs"), { session: null });
+  }
+});
 
 router.get("/login", (req, res) => {
   if (req.session.logged && req.session.email && req.session.username)

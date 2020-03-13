@@ -6,7 +6,12 @@
     <title>Spadaczka</title>
   </head>
   <body>
-    <h1>Error</h1>
-    <%=err%>
+    <h1>Spadaczka</h1>
+    <%if(session == null){%>
+    <a href="/login">Login</a>
+    <a href="/register">Register</a>
+    <%}else{%>
+    <a href="/home">Open spadaczka</a>
+    <%}%>
   </body>
 </html>
